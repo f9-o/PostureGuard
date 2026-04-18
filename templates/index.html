@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostureGuard+ | Enterprise Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Outfit"', 'sans-serif'] },
+                    colors: {
+                        dark: '#0f172a',    // slate-900 background
+                        card: '#1e293b',    // slate-800 card
+                        accent: '#38bdf8',  // light blue
+                        danger: '#ef4444',  // red
+                        success: '#10b981'  // green
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Outfit', 'Cairo', sans-serif; direction: ltr; }
+        .glass-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .neon-accent { text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 500ms; }
+    </style>
+</head>
+<body class="h-screen flex flex-col p-6 overflow-hidden max-w-[1400px] mx-auto w-full">
+
+    <!-- HEADER -->
+    <header class="flex justify-between items-center mb-6 px-2">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-accent/10 rounded-xl border border-accent/20 flex items-center justify-center text-accent">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold tracking-wider">POSTURE<span class="text-accent">GUARD+</span></h1>
+                <p class="text-xs text-slate-400 font-medium tracking-widest">Intelligent Wellness Companion</p>
+            </div>
+        </div>
+        
+        <!-- Smart Companion Bubble -->
+        <div id="ai-companion-msg" class="flex items-center gap-3 bg-accent/10 border border-accent/30 px-6 py-3 rounded-2xl shadow-lg max-w-2xl transition-all duration-700">
+            <span class="text-2xl">🤖</span>
+            <p id="ai-msg-text" class="text-sm font-semibold text-slate-200 transition-opacity duration-500 opacity-100" dir="rtl">
+                "أهلاً رغد! عندما أخذتِ استراحة اليوم، تحسنت دقة كتابتك بنسبة ٣٠٪ 🚀. واصلي إبداعك!"
+            </p>
+        </div>
+    </header>
+
+    <!-- DASHBOARD CONTENT -->
+    <div class="flex-1 grid grid-cols-12 gap-6 min-h-0">
+        
+        <!-- LEFT COLUMN: CAMERA & REALTIME ENGINE (Col-span-7) -->
+        <div class="col-span-7 flex flex-col gap-6 h-full">
+            
+            <!-- Camera View -->
+            <div class="glass-card flex-1 flex flex-col overflow-hidden relative">
+                <div class="px-6 py-4 border-b border-slate-700/50 flex justify-between items-center bg-card/50">
+                    <h2 class="font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        Sensory AI Core (Real-Time) 
+                    </h2>
+                    <button onclick="recalibrate()" class="bg-accent/10 border border-accent/20 text-accent hover:bg-accent hover:text-dark px-4 py-1.5 rounded-lg text-sm font-bold transition-all">
+                        Recalibrate Setup
+                    </button>
+                </div>
+                
+                <div class="flex-1 bg-black relative w-full h-full">
+                    <!-- The generated video feed -->
+                    <img src="/video_feed" class="w-full h-full object-cover opacity-90" alt="Biometric Vision">
+                    
+                    <!-- Live Posture Status Overlay -->
+                    <div class="absolute bottom-6 left-6 right-6">
+                        <div class="bg-card/80 backdrop-blur-md border border-white/10 rounded-xl p-4 flex justify-between items-center shadow-2xl">
+                            <div>
+                                <p class="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-1">Spine & Neck Alignment</p>
+                                <p class="text-xl font-bold text-white flex items-center gap-2" id="posture-status">
+                                    <span class="w-3 h-3 rounded-full bg-success"></span> Analysis Pending...
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-1">Eye Aspect Ratio</p>
+                                <p class="text-xl font-bold text-white"><span id="ear-val">0.0</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Metrics Row -->
+            <div class="grid grid-cols-2 gap-6 shrink-0">
+                <div class="glass-card p-5 border-l-4 border-l-yellow-500">
+                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Silent Keystroke Agent
+                    </p>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <span class="text-3xl font-bold text-white" id="latency-val">0</span>
+                            <span class="text-sm text-slate-500 font-medium">ms delay</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xl font-bold text-white" id="err-val">0</span>
+                            <span class="text-xs text-slate-500">errors/m</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 border-l-4 border-l-purple-500">
+                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Blink Rate Tracker
+                    </p>
+                    <div class="flex items-end gap-2">
+                        <span class="text-3xl font-bold text-white" id="bpm-val">0</span>
+                        <span class="text-sm text-slate-500 font-medium mb-1">Total closed frames detected</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: ALERTS & FATIGUE CHART (Col-span-5) -->
+        <div class="col-span-5 flex flex-col gap-6 h-full">
+            
+            <!-- Master Fatigue Module -->
+            <div class="glass-card p-6 flex flex-col flex-1">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="font-bold text-lg text-slate-200">Fatigue Progression</h3>
+                    <div class="px-3 py-1 bg-accent/20 text-accent rounded text-xs font-bold font-mono border border-accent/20">LIVE DATA</div>
+                </div>
+                
+                <div class="flex items-baseline gap-2 mb-6">
+                    <span class="text-5xl font-extrabold text-white tracking-tighter" id="score-text">0.0</span>
+                    <span class="text-sm font-bold text-slate-500 uppercase tracking-widest">/ 100 Index</span>
+                </div>
+
+                <div class="w-full flex-1 relative min-h-[150px]">
+                    <canvas id="fatigueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Microsoft Teams Native Simulation -->
+            <div class="glass-card p-6 shrink-0 relative overflow-hidden" id="teams-card">
+                <!-- Background visual cue -->
+                <div class="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl" id="teams-glow"></div>
+                
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-white p-1.5 rounded-lg">
+                        <svg class="w-6 h-6 text-[#5b5fc7]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c6.627 0 12 5.373 12 12s-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0zm0 4.14A7.86 7.86 0 1 0 19.86 12 7.868 7.868 0 0 0 12 4.14zm0 2.21A5.65 5.65 0 1 1 6.35 12 5.658 5.658 0 0 1 12 6.35z"/></svg>
+                    </div>
+                    <h3 class="font-bold text-lg">Microsoft Graph API (Simulated)</h3>
+                </div>
+
+                <!-- Simulation Info & Streak (Wellness Analytics) -->
+                <div class="bg-black/20 rounded-xl p-4 border border-white/5 mb-4 relative overflow-hidden flex-1 flex flex-col justify-center">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent"></div>
+                    <div class="relative flex items-center gap-3">
+                        <span class="text-3xl drop-shadow-md">🔥</span>
+                        <div>
+                            <h4 class="font-bold text-white text-md">سلسلة الالتزام</h4>
+                            <p class="text-sm text-slate-300 leading-relaxed mt-1" dir="rtl">
+                                ٥ أيام متتالية التزمتِ بأوقات الراحة!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Status Banner -->
+                <div id="teams-status-banner" class="flex justify-between items-center bg-success/10 border border-success/30 rounded-xl p-4 transition-all duration-700 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <!-- Custom Image for Raghad -->
+                        <img src="/static/raghad.png" alt="Raghad" class="w-12 h-12 rounded-full border-2 border-slate-600 object-cover">
+                        <div>
+                            <p class="text-sm font-bold text-white">رغد العمري</p>
+                            <p class="text-[11px] text-slate-400">Software Engineer</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 bg-card px-3 py-1.5 rounded-lg shadow-inner">
+                        <div id="teams-dot" class="w-3 h-3 rounded-full bg-success shadow-[0_0_8px_#10b981]"></div>
+                        <span id="teams-status-text" class="text-sm font-bold text-success">Available</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 🌟 PHASE 4: SMART INTERVENTION BREAK OVERLAY 🌟 -->
+    <div id="break-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex flex-col items-center justify-center text-center opacity-0 pointer-events-none transition-all duration-700">
+        <div class="bg-card/90 border border-accent/20 p-10 rounded-3xl max-w-lg shadow-[0_0_50px_rgba(56,189,248,0.2)]">
+            <span class="text-6xl mb-6 block">☕</span>
+            <h2 class="text-3xl font-bold text-white mb-2" dir="rtl">وقت الاستراحة!</h2>
+            <p class="text-slate-300 mb-8 text-lg" dir="rtl">تم إيقاف الإشعارات مؤقتاً لحماية صحتك.</p>
+            
+            <div class="text-6xl font-extrabold text-accent mb-8 font-mono tracking-widest" id="timer-text">05:00</div>
+            
+            <button onclick="skipBreakDemo()" class="px-6 py-2 bg-white/10 hover:bg-white/20 text-slate-300 rounded-full text-sm font-bold transition-all border border-white/10">
+                Skip Break (Demo Action)
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT ENGINE -->
+    <script>
+        // Setup Chart
+        const ctx = document.getElementById('fatigueChart').getContext('2d');
+        
+        // Gradient fill
+        let fillGrad = ctx.createLinearGradient(0, 0, 0, 200);
+        fillGrad.addColorStop(0, "rgba(56, 189, 248, 0.4)"); 
+        fillGrad.addColorStop(1, "rgba(30, 41, 59, 0)");
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 30}, (_, i) => i),
+                datasets: [{
+                    label: 'Fatigue',
+                    data: Array(30).fill(0),
+                    borderColor: '#38bdf8', // accent
+                    backgroundColor: fillGrad,
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { 
+                        display: true, 
+                        min: 0, max: 100,
+                        border: { display: false },
+                        grid: { color: "rgba(255,255,255,0.05)" },
+                        ticks: { color: "#64748b" }
+                    }
+                },
+                animation: { duration: 0 }
+            }
+        });
+
+        // AI Messaging State
+        const goodMessages = [
+            "أهلاً رغد! عندما أخذتِ استراحة اليوم، تحسنت دقة كتابتك بنسبة ٣٠٪ 🚀. واصلي إبداعك!",
+            "✨ وضعية جلوسك مثالية! استمري هكذا لتجنب آلام الكتفين.",
+            "💧 تذكير خفيف: لا تنسي شرب الماء، الترطيب يحافظ على تركيزك عالياً!",
+            "🌿 أنتِ تقومين بعمل رائع اليوم. إيقاع كتابتك يدل على هدوء وتركيز."
+        ];
+        let currentMsgIdx = 0;
+        let aiTxt = document.getElementById('ai-msg-text');
+        
+        setInterval(() => {
+            // Only rotate if not in danger mode
+            let scoreText = document.getElementById('score-text').innerText;
+            if (parseFloat(scoreText) <= 40) {
+                // Fade out
+                aiTxt.classList.remove('opacity-100');
+                aiTxt.classList.add('opacity-0');
+                
+                setTimeout(() => {
+                    currentMsgIdx = (currentMsgIdx + 1) % goodMessages.length;
+                    aiTxt.innerHTML = goodMessages[currentMsgIdx];
+                    // Fade in
+                    aiTxt.classList.remove('opacity-0');
+                    aiTxt.classList.add('opacity-100');
+                }, 500); // Wait for fade out
+            }
+        }, 8000); // 8 Seconds rotation
+
+        // Break Timer State
+        let inBreak = false;
+        let breakInterval = null;
+
+        function startBreak() {
+            document.getElementById('break-overlay').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('break-overlay').classList.add('opacity-100', 'pointer-events-auto');
+            let timeLeft = 300; // 5 minutes
+            document.getElementById('timer-text').innerText = "05:00";
+            
+            clearInterval(breakInterval);
+            breakInterval = setInterval(() => {
+                timeLeft--;
+                let m = String(Math.floor(timeLeft/60)).padStart(2, '0');
+                let s = String(timeLeft%60).padStart(2, '0');
+                document.getElementById('timer-text').innerText = `${m}:${s}`;
+                if (timeLeft <= 0) {
+                    endBreak();
+                }
+            }, 1000);
+        }
+
+        async function endBreak() {
+            clearInterval(breakInterval);
+            inBreak = false;
+            document.getElementById('break-overlay').classList.remove('opacity-100', 'pointer-events-auto');
+            document.getElementById('break-overlay').classList.add('opacity-0', 'pointer-events-none');
+            await fetch('/api/reset_fatigue', {method: 'POST'});
+        }
+
+        async function skipBreakDemo() {
+            endBreak();
+        }
+
+        // Websocket connection
+        let ws;
+        function initWebSocket() {
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                // 1. Fatigue Card
+                document.getElementById('score-text').innerText = data.score.toFixed(1);
+                
+                // Update Chart
+                chart.data.datasets[0].data = data.history.fatigue;
+                
+                // Dynamic colors for Danger vs Safe
+                let sysColor = "#38bdf8"; // safe (blue)
+                let gradientTop = "rgba(56, 189, 248, 0.4)";
+                
+                let teamsBanner = document.getElementById('teams-status-banner');
+                let teamsDot = document.getElementById('teams-dot');
+                let teamsTxt = document.getElementById('teams-status-text');
+                let teamsGlow = document.getElementById('teams-glow');
+                
+                let aiCompanionMsg = document.getElementById('ai-companion-msg');
+                let aiTxt = document.getElementById('ai-msg-text');
+
+                // Check for Phase 4 Break Intervention
+                if (data.score > 75) {
+                    // DANGER MODE
+                    sysColor = "#ef4444";
+                    gradientTop = "rgba(239, 68, 68, 0.4)";
+                    
+                    document.getElementById('score-text').classList.add('text-danger');
+                    
+                    // Smart Companion Alert Mode
+                    aiCompanionMsg.className = "flex items-center gap-3 bg-red-500/10 border border-red-500/30 px-6 py-3 rounded-2xl shadow-lg max-w-2xl transition-all duration-700 shadow-[0_0_20px_rgba(239,68,68,0.2)]";
+                    aiTxt.innerHTML = "⚠️ يا رغد، لاحظت إنك تعبتي بعد ساعة ونص - هذا وقتك المعتاد! حولت Teams لـ 'عدم الإزعاج' عشان تريحي عيونك. خذي بريكك الآن 🙂☕";
+                    aiTxt.className = "text-sm font-bold text-red-200 transition-opacity duration-500 opacity-100";
+                    
+                    // Teams Simulation update
+                    teamsBanner.className = "flex justify-between items-center bg-danger/10 border border-danger/30 rounded-xl p-4 transition-all duration-700 shadow-[0_0_20px_rgba(239,68,68,0.2)]";
+                    teamsDot.className = "w-3 h-3 rounded-full bg-danger animate-pulse shadow-[0_0_8px_#ef4444]";
+                    teamsTxt.className = "text-sm font-bold text-danger";
+                    teamsTxt.innerText = "Do Not Disturb";
+                    teamsGlow.className = "absolute -right-10 -top-10 w-32 h-32 bg-danger/20 rounded-full blur-3xl";
+
+                    if (!inBreak) {
+                        inBreak = true;
+                        startBreak(); // Execute Phase 4
+                    }
+
+                } else {
+                    document.getElementById('score-text').classList.remove('text-danger');
+                    
+                    if (data.score > 40) {
+                        sysColor = "#eab308"; // warn
+                        gradientTop = "rgba(234, 179, 8, 0.4)";
+                        
+                        aiCompanionMsg.className = "flex items-center gap-3 bg-yellow-500/10 border border-yellow-500/30 px-6 py-3 rounded-2xl shadow-lg max-w-2xl transition-all duration-700";
+                        aiTxt.innerHTML = "🎯 أداؤك مستقر، حافظي على استقامة ظهرك وتذكري الرمش لتجنب إجهاد العين.";
+                        aiTxt.className = "text-sm font-semibold text-yellow-100 transition-opacity duration-500 opacity-100";
+                    } else {
+                        // NORMAL COMPANION MODE
+                        aiCompanionMsg.className = "flex items-center gap-3 bg-accent/10 border border-accent/30 px-6 py-3 rounded-2xl shadow-lg max-w-2xl transition-all duration-700";
+                        // We do not overwrite innerHTML here so the cycling logic takes over!
+                        aiTxt.className = "text-sm font-semibold text-slate-200 transition-opacity duration-500 opacity-100";
+                    }
+                    
+                    // Teams Simulation Normal
+                    teamsBanner.className = "flex justify-between items-center bg-success/10 border border-success/30 rounded-xl p-4 transition-all duration-700";
+                    teamsDot.className = "w-3 h-3 rounded-full bg-success shadow-[0_0_8px_#10b981]";
+                    teamsTxt.className = "text-sm font-bold text-success";
+                    teamsTxt.innerText = "Available";
+                    teamsGlow.className = "absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl";
+                }
+                
+                chart.data.datasets[0].borderColor = sysColor;
+                fillGrad = ctx.createLinearGradient(0, 0, 0, 200);
+                fillGrad.addColorStop(0, gradientTop);
+                fillGrad.addColorStop(1, "rgba(30, 41, 59, 0)");
+                chart.data.datasets[0].backgroundColor = fillGrad;
+                chart.update();
+
+                // 2. Devices / Keyboard
+                document.getElementById('latency-val').innerText = data.keyboard.latency;
+                document.getElementById('err-val').innerText = data.keyboard.errors;
+                
+                // 3. Vision & Eye Metrics
+                let postStr = data.camera.posture_status;
+                let postDot = postStr.includes("Warning") ? "bg-red-500 shadow-[0_0_10px_#ef4444]" : "bg-success shadow-[0_0_10px_#10b981]";
+                let postTextClass = postStr.includes("Warning") ? "text-red-400" : "text-white";
+                
+                document.getElementById('posture-status').innerHTML = `<span class="w-3 h-3 rounded-full ${postDot}"></span> <span class="${postTextClass}">${postStr}</span>`;
+                
+                document.getElementById('bpm-val').innerText = data.camera.blinks;
+                document.getElementById('ear-val').innerText = data.camera.ear;
+            };
+
+            ws.onclose = () => { setTimeout(initWebSocket, 2000); };
+        }
+
+        async function recalibrate() {
+            await fetch('/api/calibrate', {method: 'POST'});
+        }
+
+        window.onload = initWebSocket;
+    </script>
+</body>
+</html>
